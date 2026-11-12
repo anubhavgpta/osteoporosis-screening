@@ -1,282 +1,179 @@
-# Non-Invasive Osteoporosis Screening Pipeline
+# Osteoporosis Screening
 
-The separate native R implementation is available in
-[OsteoScreen R](https://github.com/anubhavgpta/OsteoScreen-R-Survey-Weighted-Osteoporosis-Screening-with-NHANES-and-KNHANES).
+**Survey-weighted machine learning for femoral-neck osteoporosis screening using NHANES and KNHANES.**
 
-## Reproducing the archived report
+[![Reproducibility checks](https://github.com/anubhavgpta/osteoporosis-screening/actions/workflows/tests.yml/badge.svg)](https://github.com/anubhavgpta/osteoporosis-screening/actions/workflows/tests.yml)
 
-This repository contains the research source, configurations, tests, and historical
-result summaries. Raw survey data, processed participant records, fitted models,
-and generated result tables are excluded from Git. Download NHANES using the CLI;
-obtain approved KNHANES exports separately for external validation.
+## Project overview
 
-Use the [reproducibility guide](reproducibility/README.md) for the pinned Python
-environment, reference input hashes, isolated runs, and verification evidence.
-The current configuration uses `pr_auc`, matching the report, and new runs save
-the temporal model. Exact reproduction of historical metrics remains unverified:
-the original generating revision/environment is unknown and the archived model
-and metadata differ from their old external-validation manifest hashes. Those
-historical discrepancies are preserved rather than silently corrected. See
-`manuscript/README.md` for the original provenance and evaluation limitations.
+This repository provides a configuration-driven research pipeline for estimating concurrent femoral-neck osteoporosis from routinely collected demographic, anthropometric, and medical-history information. Model development uses the US National Health and Nutrition Examination Survey (NHANES); external evaluation uses approved exports from the Korea National Health and Nutrition Examination Survey (KNHANES).
 
-This repository implements an end-to-end NHANES 2005–2018 research pipeline for
-screening current femoral-neck osteoporosis from routinely collectible demographic,
-anthropometric, lifestyle, and dietary variables. DXA is used only to construct the
-research outcome. The output is a screening estimate—not a diagnosis or treatment
-recommendation.
+The analytical objective is to assess risk discrimination, probability calibration, and screening-threshold transportability across survey periods and populations. Dual-energy X-ray absorptiometry (DXA) defines the research outcome and is excluded from the screening predictors. The software supports research on prioritization for DXA assessment; it is not a clinically validated diagnostic system.
 
-## Implemented design
+The independent [R implementation](https://github.com/anubhavgpta/OsteoScreen-R-Survey-Weighted-Osteoporosis-Screening-with-NHANES-and-KNHANES) is maintained in a separate repository. Its outputs are not assumed to reproduce the Python results exactly.
 
-- Femoral-neck DXA anchors the cohort; other components are left-joined by `SEQN`.
-- Primary classification uses all eligible MEC/DXA participants aged 50+; only
-  nutrition ablations require a reliable Day 1 dietary recall.
-- NHANES 2005–2006 is harmonized as a candidate expansion cycle. It remains outside
-  the production model because it did not improve the fixed 2017–2018 temporal test.
-- Regression uses reliable Day 1 recalls in adults aged 40+.
-- The sole classification outcome is osteoporosis (`T-score <= -2.5`). Osteopenia and
-  normal BMD are both negative for this classifier.
-- Continuous femoral-neck BMD is retained for a secondary regression task.
-- Dietary-pattern clusters are fitted inside each training fold to prevent leakage.
-- Regularized logistic regression, random forest, and XGBoost classifiers are compared
-  by cross-validation. Ridge, random forest, and XGBoost regressors are compared likewise.
-- E1–E8 ablations quantify demographics, anthropometrics, lifestyle, nutrition,
-  nutrition clusters, and FRAX-grade clinical-history variables. E12 adds common-cycle
-  arthritis, liver, thyroid, and walking-equipment variables. E11 independently
-  replicates a published 19-variable low-BMD panel in cycles with complete coverage.
-- A separate 2013-14 targeted analysis adds E9 (E3 + CDC combined grip strength) and
-  E10 (E9 + alkaline phosphatase, serum calcium, serum total folate, and serum 25(OH)D).
-  Keeping this analysis cycle-specific prevents grip-test availability from acting as
-  a survey-cycle proxy in the four-cycle pooled model.
-- Cluster count selection combines silhouette, Calinski–Harabasz, Davies–Bouldin,
-  repeated-subsample adjusted-Rand stability, and a minimum cluster-size guardrail.
-- The deployed classifier uses E12: E8 plus arthritis history, liver condition,
-  thyroid problem, and need for walking equipment. Promotion required a positive
-  paired PR-AUC confidence-interval lower bound against E8.
-- Regression E1–E8 ablations run only on the training partition; the best feature set
-  is then evaluated once on the held-out test partition.
-- The chosen classifier is probability-calibrated, and its operating threshold is
-  selected from calibrated out-of-fold training probabilities.
-- Numeric item non-response uses iterative multivariate imputation. Structural activity
-  skips, sentinel non-response, survey-subsample missingness, and exam limitations are
-  handled and audited separately.
-- Model fitting, cross-validation scoring, and held-out metrics use MEC weights for
-  non-diet analyses and Day 1 dietary weights for nutrition analyses.
-  PSU-within-stratum bootstrap intervals,
-  raw and weighted prevalence,
-  cohort attrition, missingness, subgroup checks, predictions, plots, and fitted models
-  are written to disk.
-- Subgroup operating thresholds are learned from out-of-fold training predictions and
-  held-out subgroup results with n < 100 are explicitly flagged as unstable.
-- A 2017–2018 temporal holdout tests transport over time for the same exact-
-  osteoporosis endpoint.
-- Evaluation includes ROC-AUC, PR-AUC, sensitivity, specificity, PPV, NPV, MCC,
-  log loss, Brier score/skill, calibration intercept/slope and plots, and decision
-  curves. Threshold-dependent metrics are reported at both 0.5 and a training-only
-  sensitivity-oriented threshold.
-- SHAP attribution is explicitly disabled in the report configuration. Set
-  `shap_enabled: true` to generate it with the optional `shap` dependency; a
-  manifest records disabled or unavailable attribution without failing the run.
-- Training-only operating points are also supplied for recall targets of 90%, 80%,
-  and 70%, and precision targets of 20%, 25%, and 30%.
-- The NHANES-KNHANES integration experiment additionally compares a source-specific
-  recall-preserving policy and a source-specific fixed-90%-recall policy. Candidate
-  models maximize worst-source prevalence-standardized PPV only after meeting the
-  recall constraint in every held-out training cycle/year. Paired PSU-within-stratum
-  intervals compare each policy with the unchanged global-threshold incumbent.
-- A harmonized external-audit command supports approved KNHANES, MrOS, and UK Biobank
-  exports without fitting or tuning on the external cohort.
+## Study design
 
-The configurable T-score reference is in
-[`configs/model_config.yaml`](configs/model_config.yaml). It must be cited and reviewed
-before publication or clinical interpretation. The current code uses a fixed
-femoral-neck reference for both sexes, consistent with the intended ISCD-style
-classification design, but does not turn the model into a clinical diagnostic device.
+| Component | Specification |
+|---|---|
+| Primary population | NHANES participants aged 50 years or older with eligible femoral-neck DXA measurements |
+| Development cycles | 2007–2008, 2009–2010, 2013–2014, and 2017–2018 |
+| Expansion analysis | 2005–2006, retained as a sensitivity analysis |
+| Primary endpoint | Femoral-neck T-score ≤ −2.5 |
+| Reference calculation | T-score = (BMD − 0.858) / 0.120, with BMD in g/cm² |
+| Candidate classifiers | Regularized logistic regression, random forest, and XGBoost |
+| Selection metric | Survey-weighted average precision (`pr_auc`) |
+| Calibration | Sigmoid calibration within training data |
+| Primary operating policy | Threshold selected from calibrated out-of-fold predictions to target 90% training sensitivity |
+| Evaluation | Random holdout, 2017–2018 temporal holdout, frozen KNHANES evaluation, and separate nested experiments |
+| Secondary analyses | Continuous BMD regression, predictor-panel comparisons, and alternative outcome definitions |
 
-## Run
+The historical report selected the E12 panel, comprising 17 routine predictors and one derived age–sex category. The current workflow retains panel comparisons; a new run is not guaranteed to select the same panel or algorithm.
 
-PowerShell:
+Preprocessing addresses questionnaire nonresponse, structural skips, missing values, and categorical encoding. Numeric imputation, scaling, and categorical transformations are fitted within model pipelines. MEC or dietary survey weights are applied according to the analysis population. Evaluation includes discrimination, calibration, sensitivity, specificity, predictive values, and PSU-within-stratum bootstrap intervals.
+
+The outcome constants and analysis settings are defined in [model_config.yaml](configs/model_config.yaml). Variable mappings are specified in [variables.yaml](configs/variables.yaml).
+
+## Reproducibility status
+
+| Verification component | Status |
+|---|---|
+| Dependency environment | Exact package versions recorded in `requirements-lock.txt`; target platform is Windows x86_64 with CPython 3.13.3 |
+| Automated validation | 58 tests passed locally; the clean-install GitHub Actions workflow passed |
+| NHANES cohort reconstruction | 9,367 rows and 161 columns reproduced from raw inputs, including 562 osteoporosis cases |
+| KNHANES harmonization | 21,303 rows and 23 columns reproduced; the external evaluation population comprises 9,387 eligible adults |
+| Repeated training and serialization | Synthetic-data tests verify repeated probabilities, thresholds, and saved-model predictions within 1e-12 |
+| Full-data model verification | Pending completion of the new full training and external-evaluation run |
+| Historical report metrics | Retained as reference values; exact regeneration has not been established |
+
+Cohort comparisons used relative and absolute tolerances of 1e-12, with storage-dtype differences ignored. Verification records are available in [cohort_verification.json](reproducibility/cohort_verification.json). Historical model results are preserved in [historical_reference.json](reproducibility/historical_reference.json).
+
+The original model-generating revision and environment are not fully recoverable. Archived model and metadata hashes also differ from their historical external-validation manifest. These discrepancies remain documented; successful software tests should not be interpreted as proof that every published metric has been reproduced.
+
+## Installation
+
+The supported validation environment is **CPython 3.13.3 on Windows x86_64**. Execute the following commands from the repository root in PowerShell:
 
 ```powershell
 py -3.13 -m venv .venv-repro
 .\.venv-repro\Scripts\python.exe -m pip install -r requirements-lock.txt
 .\.venv-repro\Scripts\python.exe -m pip install --no-deps --no-build-isolation -e .
-.\.venv-repro\Scripts\python.exe -m osteoporosis_screening.reproduce --output runs/core --download --expected-inputs reproducibility/reference_inputs.json
+.\.venv-repro\Scripts\python.exe -m pip check
+.\.venv-repro\Scripts\python.exe -m pytest -q
 ```
 
-The download step retrieves official 2005–06, 2007–08, 2009–10, 2013–14, and
-2017–18 XPT files listed in
-[`configs/variables.yaml`](configs/variables.yaml). Raw files are ignored by Git and
-never modified.
+The `py -3.13` launcher must resolve to Python 3.13.3. The isolated runner checks Python and installed package versions against the committed environment specification. Other platforms and interpreter versions have not been validated.
 
-The examples below use the original `.venv` path; substitute `.venv-repro` when
-using the locked setup above, and pass `--root runs/core` to work with its outputs.
-Use Python 3.13.3 on Windows x86_64 for the validated environment. KNHANES data
-must be obtained separately; see the guide before adding `--external`.
+## Data requirements
 
-Native harmonization and frozen external validation of the approved KNHANES
-2008-2011 SAS files in `data/raw_knhanes/`:
+NHANES files are retrieved from official CDC endpoints. KNHANES external evaluation requires separately obtained, approved basic-survey and DXA exports for 2008–2011. Required filenames and extraction paths are documented in the [reproducibility guide](reproducibility/README.md#data).
+
+Raw and processed participant data, fitted model binaries, generated tables, and local run directories are excluded from version control. The repository includes a [reference input manifest](reproducibility/reference_inputs.json) containing SHA-256 hashes for 100 NHANES files and eight KNHANES SAS files. Hashes establish input identity; they do not provide access to the datasets.
+
+## Execution
+
+### NHANES development and evaluation
+
+The following command creates a new isolated directory, downloads NHANES components, verifies reference inputs, and executes the core workflow:
 
 ```powershell
-.\.venv\Scripts\osteoporosis-pipeline.exe knhanes-validate --root .
+.\.venv-repro\Scripts\python.exe -m osteoporosis_screening.reproduce `
+  --output runs/core `
+  --download `
+  --expected-inputs reproducibility/reference_inputs.json
 ```
 
-This produces the harmonized cohort, a variable-mapping audit, an official-weight
-cohort flow, pooled metrics, metrics by survey year, calibration, and descriptive
-precision-recall trade-offs. Use `knhanes-harmonize` instead when only the harmonized
-cohort is required.
+The core workflow includes classification, temporal evaluation, and secondary regression analyses. It can require substantial CPU time. Existing run directories are rejected to protect prior outputs.
 
-Compare NHANES-only, KNHANES-only, native-weight pooled, dataset-balanced pooled, and
-reduced consistently measured training strategies:
+### External evaluation
+
+After placing approved KNHANES files in the documented data directories, execute a separate run:
 
 ```powershell
-.\.venv\Scripts\osteoporosis-pipeline.exe integration-experiment --root .
+.\.venv-repro\Scripts\python.exe -m osteoporosis_screening.reproduce `
+  --output runs/core-external `
+  --external `
+  --expected-inputs reproducibility/reference_inputs.json
 ```
 
-This command selects models and 90%-recall thresholds using leave-one-cycle/year-out
-training predictions, then evaluates unchanged models on NHANES 2017-2018 and KNHANES
-2011. It does not overwrite the production model artifact.
+This command uses existing local raw files. Add `--download` if NHANES files have not been obtained. External predictions use the fitted NHANES model and stored thresholds without refitting on KNHANES.
 
-Run the additive curve-bending experiment without replacing any production result or
-model artifact:
+### Cohort-only verification
 
 ```powershell
-.\.venv\Scripts\osteoporosis-pipeline.exe curve-bending-experiment --root .
+.\.venv-repro\Scripts\python.exe -m osteoporosis_screening.reproduce `
+  --output runs/cohorts `
+  --prepare-only `
+  --external `
+  --expected-inputs reproducibility/reference_inputs.json
 ```
 
-This compares pooled biomarkers without grip, conservative lower-confidence-bound
-recall thresholds, sex-specific models with independently selected features and
-hyperparameters, a biomarker confirmation cascade, and a screen-then-DXA pathway.
-Outer leave-one-cycle-out evaluation contains all model, calibration, and threshold
-selection inside each training partition. Outputs use the `curve_bending_` prefix;
-the command refuses to replace even those additive outputs unless `--overwrite` is
-given.
+Use `--data-root PATH` to select an alternative directory containing `raw_xpt` and `raw_knhanes`. The runner copies inputs into the isolated run; sufficient storage for that copy is required.
 
-After that model-selection run exists, compare less restrictive operating points
-without repeating the full hyperparameter grid:
+### Integrity and prediction verification
+
+After a full run completes:
 
 ```powershell
-.\.venv\Scripts\osteoporosis-pipeline.exe relaxed-operating-experiment --root .
+.\.venv-repro\Scripts\python.exe -m osteoporosis_screening.reproduce --output runs/core-external --verify
+.\.venv-repro\Scripts\python.exe -m osteoporosis_screening.verify_results --root runs/core-external
 ```
 
-This consolidates the already training-selected 80% and 70% recall policies and the
-20%, 25%, and 30% precision policies across both random and temporal holdouts. It
-ranks the pre-specified choices by balanced accuracy, MCC, and F1 without fitting or
-tuning on either evaluation set. Its independent outputs use the
-`curve_bending_relaxed_` prefix.
+The first command verifies recorded source, configuration, environment-file, input, and output hashes. The second reloads locally trained models and compares recomputed internal, temporal, and available external probabilities with exported predictions. A failed or incomplete run does not pass integrity verification.
 
-Run the additive feature/model combination experiment without replacing production
-artifacts:
+## Supplementary analyses
+
+Add `--experiments` to a new full run to execute the nested feature-combination and target-definition analyses. Additional commands are available through the CLI:
+
+| Command | Analytical purpose |
+|---|---|
+| `feature-combination-experiment` | Nested evaluation of extended predictor panels and model families |
+| `target-definition-experiment` | Comparison of osteoporosis and inclusive low-BMD endpoints |
+| `low-bmd-feature-combination-experiment` | Extended model and panel comparisons for low BMD |
+| `curve-bending-experiment` | Biomarker, subgroup, and screening-policy analyses |
+| `relaxed-operating-experiment` | Alternative recall and precision operating points from existing experiment outputs |
+| `integration-experiment` | NHANES-only, KNHANES-only, and pooled training strategies |
+| `osteoporosis-imbalance-experiment` | Class-imbalance sensitivity analyses |
+| `site-target-experiment` | Alternative skeletal-site endpoint analyses |
+| `external-audit` | Frozen evaluation of a compatible harmonized external dataset |
+| `track-two-target-results` | Consolidation of available osteoporosis and low-BMD results |
+
+For example, the following command writes additive experiment outputs into an existing run:
 
 ```powershell
-.\.venv\Scripts\osteoporosis-pipeline.exe feature-combination-experiment --root .
+.\.venv-repro\Scripts\osteoporosis-pipeline.exe feature-combination-experiment --root runs/core-external
 ```
 
-This evaluates albumin/alkaline-phosphatase chemistry, additional anthropometry,
-leakage-safe high-risk medication classes when all cycle files are available,
-expanded nested hyperparameter grids, LightGBM, CatBoost, MLP, LASSO-selected
-logistic regression, spline logistic regression, and a stacked tree/boosting
-ensemble. It also writes OSTA and non-proprietary FRAX-grade risk-count clinical
-score baselines so the ML model can be compared with simple clinical tools.
-Feature, model, calibration, and threshold selection are nested inside
-leave-one-cycle-out evaluation. It also performs nested leave-one-year-out KNHANES
-recalibration using the existing frozen-model external predictions. Outputs use the
-independent `feature_combination_` prefix. Optional SMOTE/ADASYN/random-oversampling
-arms are available by installing `.[literature]` and setting
-`include_resampling_candidates: true`.
+Direct CLI commands do not refresh the isolated runner's manifest. Use a new isolated run with `--experiments` when a single manifest must cover all generated outputs. Some supplementary commands require prior experiment outputs or external data. Refer to their configuration files and result summaries before execution.
 
-## Target-definition and methodology sensitivity analysis
+SHAP attribution is disabled explicitly in the default configuration. Set `shap_enabled: true` for a separate attribution analysis. The implementation restores categorical labels before model prediction and records whether attribution was completed or skipped.
 
-Run `.\.venv\Scripts\osteoporosis-pipeline.exe target-definition-experiment --root .`
-to compare the deployed osteoporosis target with an inclusive low-BMD target under both
-the rigorous pipeline and a deliberately naive literature-style diagnostic arm. This
-experiment exists to explain literature comparisons, not to change the deployed model.
+## Repository structure
 
-Run the additive low-BMD feature/model experiment:
+| Location | Contents |
+|---|---|
+| `src/osteoporosis_screening/` | Ingestion, harmonization, modeling, evaluation, experiment, and reproducibility modules |
+| `configs/` | Variable mappings, endpoint definitions, and experiment parameters |
+| `tests/` | Unit, integration, provenance, and repeatability tests |
+| `reproducibility/` | Execution guidance, reference hashes, and verification records |
+| `reports/` | Historical analytical summaries |
+| `manuscript/` | Research text, methodological reviews, and provenance records |
+| `.github/workflows/` | Automated installation and validation checks |
+| `runs/` | Local isolated runs; excluded from Git |
 
-```powershell
-.\.venv\Scripts\osteoporosis-pipeline.exe low-bmd-feature-combination-experiment --root .
-```
+Each isolated run contains a source snapshot, copied configuration, environment details, stage logs, and `manifest.json`. Generated outputs include harmonized cohorts, internal and temporal models, operating thresholds, participant predictions, metric tables, and figures. Historical outputs at the repository root are not overwritten by the isolated runner.
 
-This reuses the nested feature-combination machinery for the inclusive low-BMD target,
-including anthropometric-first, E12, extended-anthropometric, routine-lab, and
-published low-BMD panel candidates where cycle coverage permits. Outputs use the
-`low_bmd_feature_combination_` prefix and do not replace production osteoporosis
-artifacts.
+## Methodological limitations
 
-Refresh the two-target metric tracker after any additive experiment:
+- The surveys are cross-sectional. The endpoint represents concurrent femoral-neck osteoporosis, not future fracture risk or disease onset.
+- The historical core workflow selects predictor panels before final random and temporal splits. Consequently, those evaluations should not be described as fully independent estimates of the complete selection procedure. Separate nested experiments address different evaluation designs.
+- Survey weighting and the implemented bootstrap do not establish equivalence to a validated replicate-weight or Taylor-series variance procedure.
+- KNHANES mapping includes proxies and unavailable predictors. Differences in calibration and screening performance cannot be attributed to geography alone.
+- The fixed T-score reference, age eligibility, skeletal-site scope, and scanner comparability require consideration when interpreting results.
+- Prospective clinical effectiveness, fairness, and cost-effectiveness have not been established.
 
-```powershell
-.\.venv\Scripts\osteoporosis-pipeline.exe track-two-target-results --root .
-```
+Detailed provenance and methodological qualifications are retained in the [manuscript documentation](manuscript/README.md). The [implementation roadmap](reports/IMPLEMENTATION_ROADMAP.md) records additional research work.
 
-The tracker writes `reports/tables/two_target_metric_tracker.csv` and
-`reports/TWO_TARGET_TRACKING_RESULTS.md`, comparing each available experiment against
-the frozen rigorous baseline for its target.
+## Research use and attribution
 
-External validation of another already-harmonized CSV or Parquet export:
-
-```powershell
-.\.venv\Scripts\osteoporosis-pipeline.exe external-audit `
-  --dataset knhanes_2008_2011 `
-  --input C:\path\to\harmonized_knhanes.csv
-```
-
-The required dataset coding and access notes are in
-[`configs/external_datasets.yaml`](configs/external_datasets.yaml). The command derives
-the identical femoral-neck osteoporosis endpoint and never retrains or recalibrates the
-model. All operating metrics use thresholds stored with the NHANES model. The generated
-`external_knhanes_2008_2011_manifest.json` records the input hash, frozen-model policy,
-endpoint reference, sample size, and prevalence. Separate cohort-flow, feature-audit,
-calibration, and precision/recall trade-off tables support the transportability review.
-Thresholds in the trade-off table are descriptive diagnostics only and must not replace
-the frozen NHANES screening threshold. Precision is also standardized to the 5.6%
-NHANES comparison prevalence because observed KNHANES prevalence is substantially higher.
-
-## Outputs
-
-- `data/processed/`: reproducible classification and regression cohorts
-- `data/processed/classification_all_cycles_cohort.csv.gz`: production plus candidate
-  expansion cycles; `classification_cohort.csv.gz` contains production cycles only
-- `artifacts/`: serialized calibrated classifier and BMD regressor
-- `reports/run_summary.json`: compact run summary
-- `reports/tables/`: cohort flow, merge audit, missingness mechanisms and bias checks,
-  prevalence, test metrics and confidence intervals, operating thresholds, model
-  comparisons, subgroup checks, predictions, and dietary cluster profiles
-- `reports/tables/performance_comparison.csv`: historical and same-cohort E3/E8 comparisons
-- `reports/tables/targeted_biomarker_classification_ablations.csv`: paired 2013-14
-  E3/E9/E10 comparison; downstream targeted deployment outputs are created only when
-  an E9/E10 PR-AUC gain has a positive paired 95% CI lower bound
-- `reports/figures/`: held-out ROC, calibration, decision-curve, and
-  observed-versus-predicted plots
-- `reports/DATASET_EXPANSION_RESULTS.md`: fixed-holdout evaluation of NHANES 2005–2006
-  and the external-dataset access/compatibility decision
-- `reports/MEDICAL_MOBILITY_RESULTS.md`: E12 promotion evidence and held-out
-  precision–recall operating-point trade-offs
-- `reports/PRECISION_RECALL_CONSTRAINED_RESULTS.md`: constrained NHANES-KNHANES
-  precision/recall analysis and the retain-incumbent decision
-- `reports/tables/nhanes_knhanes_integration_policy_*.csv`: policy metrics,
-  paired comparisons and intervals; the corresponding gzip file contains participant-
-  level policy predictions
-- `reports/tables/curve_bending_*.csv`: additive biomarker availability/signal,
-  nested leave-one-cycle-out model and policy comparisons, threshold audits, model
-  selections, and participant-level predictions; these never replace production files
-
-## Validate
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest
-.\.venv\Scripts\python.exe -m ruff check src tests
-```
-
-## Interpretation limits
-
-NHANES is cross-sectional, so the model estimates concurrent osteoporosis risk and cannot
-predict future disease onset or establish causal effects. It is a screening/triage
-model, not a replacement for DXA diagnosis. The weighted metrics use
-participant weights and a PSU-within-stratum bootstrap, but a target publication may
-still require replicate-weight or Taylor-series variance estimation. The pipeline uses
-a held-out split plus inner cross-validation and temporal validation; a later
-study-grade release should add nested repeated cross-validation, Day 1/Day 2 and
-supplement sensitivity analyses, and independent geographic validation. See
-[`reports/IMPLEMENTATION_ROADMAP.md`](reports/IMPLEMENTATION_ROADMAP.md) for the tracked
-rework status.
+For research using this software, report the repository commit, Python and package versions, input-manifest identity, configuration, evaluation design, and run-manifest status. Cite the underlying NHANES and KNHANES data sources and the relevant methodological references. Repository availability does not establish a software license or confer redistribution rights for external datasets; review applicable terms before reuse or redistribution.
