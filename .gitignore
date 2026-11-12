@@ -1,4 +1,6 @@
 .venv/
+.venv-*/
+runs/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -23,6 +25,7 @@ tmp/pdfs/methodology_page-*.png
 tmp/pdfs/results_qa-*.png
 data/raw_xpt/*.XPT
 data/raw_xpt/*.xpt
+data/raw_xpt/download_manifest.json
 data/raw_knhanes/*
 data/interim/*
 data/processed/*
