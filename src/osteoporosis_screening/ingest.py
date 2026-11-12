@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -8,7 +9,6 @@ from urllib.error import URLError
 from urllib.request import urlretrieve
 
 import pandas as pd
-
 
 _BONE_RISK_MEDICATION_TERMS = {
     "systemic_glucocorticoid_medication": (
@@ -167,6 +167,24 @@ def download_files(raw_dir: Path, variable_config: dict, overwrite: bool = False
                         raise RuntimeError(f"Failed to download required {url}") from error
                     continue
             partial.replace(destination)
+
+    from .reproduce import sha256
+
+    records = []
+    for cycle in variable_config["cycles"]:
+        for template, details in variable_config["files"].items():
+            name = _cycle_file_name(template, cycle["suffix"]) + ".XPT"
+            path = raw_dir / name
+            records.append({
+                "file": name,
+                "required": details.get("required", False),
+                "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/"
+                       f"{cycle['begin_year']}/DataFiles/{name}",
+                "sha256": sha256(path) if path.exists() else None,
+            })
+    (raw_dir / "download_manifest.json").write_text(
+        json.dumps(records, indent=2), encoding="utf-8"
+    )
 
 
 def read_component(
