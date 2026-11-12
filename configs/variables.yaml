@@ -1,0 +1,291 @@
+cycles:
+  - {label: "2005-2006", begin_year: 2005, suffix: D}
+  - {label: "2007-2008", begin_year: 2007, suffix: E}
+  - {label: "2009-2010", begin_year: 2009, suffix: F}
+  - {label: "2013-2014", begin_year: 2013, suffix: H}
+  - {label: "2017-2018", begin_year: 2017, suffix: J}
+files:
+  DEMO_H:
+    required: true
+    columns:
+      SEQN: participant_id
+      RIAGENDR: sex
+      RIDAGEYR: age
+      RIDRETH1: race_ethnicity
+      DMDEDUC2: education
+      INDFMPIR: poverty_income_ratio
+      WTMEC2YR: mec_weight
+      SDMVPSU: survey_psu
+      SDMVSTRA: survey_stratum
+  BMX_H:
+    required: true
+    columns:
+      SEQN: participant_id
+      BMXWT: weight_kg
+      BMXHT: height_cm
+      BMXBMI: bmi
+      BMXARML: upper_arm_length_cm
+      BMXARMC: arm_circumference_cm
+      BMXWAIST: waist_circumference_cm
+  DXXFEM_H:
+    required: true
+    columns:
+      SEQN: participant_id
+      DXAFMRST: femur_scan_status
+      DXXFMBCC: femur_invalidity_code
+      DXXNKBMD: femoral_neck_bmd
+      DXXOFBMD: total_femur_bmd
+  DXXSPN_H:
+    required: false
+    columns:
+      SEQN: participant_id
+      DXASPNST: spine_scan_status
+      DXXOSBCC: spine_invalidity_code
+      DXXOSBMD: total_spine_bmd
+  DR1TOT_H:
+    required: true
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      WTDRD1: dietary_day1_weight
+      DR1DRSTZ: dietary_recall_status
+      DR1TKCAL: energy_kcal
+      DR1TPROT: protein_g
+      DR1TATOC: vitamin_e_mg
+      DR1TVD: vitamin_d_mcg
+      DR1TCALC: calcium_mg
+      DR1TPHOS: phosphorus_mg
+      DR1TMAGN: magnesium_mg
+  PAQ_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      PAQ610: vigorous_work_days
+      PAD615: vigorous_work_minutes
+      PAQ625: moderate_work_days
+      PAD630: moderate_work_minutes
+      PAQ640: walk_bike_days
+      PAD645: walk_bike_minutes
+      PAQ655: vigorous_recreation_days
+      PAD660: vigorous_recreation_minutes
+      PAQ670: moderate_recreation_days
+      PAD675: moderate_recreation_minutes
+      PAD680: sitting_minutes
+  ALQ_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      ALQ101: alcohol_12plus_year
+      ALQ120Q: alcohol_frequency_quantity
+      ALQ120U: alcohol_frequency_unit
+      ALQ130: drinks_per_drinking_day
+  SMQ_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      SMQ020: smoked_100_cigarettes
+      SMQ040: current_smoking_frequency
+  OSQ_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      OSQ010A: fractured_hip_history
+      OSQ010B: fractured_wrist_history
+      OSQ010C: fractured_spine_history
+      OSQ080: other_adult_fracture_history
+      OSQ130: long_term_glucocorticoid_raw
+      OSQ170: maternal_hip_fracture_raw
+      OSQ200: paternal_hip_fracture_raw
+  RHQ_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      RHQ031: period_past_year_raw
+      RHD043: amenorrhea_reason_raw
+      RHQ305: ovaries_removed_raw
+      RHQ540: hormone_therapy_raw
+  MGX_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      MGDEXSTS: grip_test_status
+      MGXH1T1: grip_hand1_trial1_kg
+      MGXH1T2: grip_hand1_trial2_kg
+      MGXH1T3: grip_hand1_trial3_kg
+      MGXH2T1: grip_hand2_trial1_kg
+      MGXH2T2: grip_hand2_trial2_kg
+      MGXH2T3: grip_hand2_trial3_kg
+      MGDCGSZ: combined_grip_strength_kg
+  BIOPRO_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      LBXSAL: serum_albumin_g_dl
+      LBXSAPSI: alkaline_phosphatase_iu_l
+      LBXSCA: serum_calcium_mg_dl
+      LBXSCK: creatine_phosphokinase_iu_l
+      LBXSGB: globulin_g_dl
+      LBXSOSSI: osmolality_mmol_kg
+      LBXSTP: total_protein_g_dl
+      LBXSUA: uric_acid_mg_dl
+  RXQ_RX_H:
+    required: false
+    one_to_many: true
+    columns:
+      SEQN: participant_id
+      RXDUSE: prescription_use_raw
+      RXDDRUG: prescription_generic_name
+      RXDDAYS: prescription_days
+      RXDCOUNT: prescription_count
+  FOLFMS_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      LBDFOTSI: serum_total_folate_nmol_l
+  VID_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      LBXVIDMS: serum_25oh_vitamin_d_nmol_l
+      LBDVIDLC: serum_25oh_vitamin_d_lod_code
+  CBC_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      LBXMOPCT: monocyte_percent
+      LBXNEPCT: segmented_neutrophils_percent
+      LBXMCVSI: mean_cell_volume_fl
+      LBXRDW: red_cell_distribution_width_percent
+  GHB_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      LBXGH: glycohemoglobin_percent
+  TCHOL_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      LBXTC: total_cholesterol_mg_dl
+  DIQ_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      DIQ010: diabetes_status_raw
+  MCQ_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      MCQ160A: arthritis_raw
+      MCQ195: arthritis_type_raw
+      MCQ160L: liver_condition_raw
+      MCQ160M: thyroid_problem_raw
+  PFQ_H:
+    required: false
+    allow_missing_columns: true
+    columns:
+      SEQN: participant_id
+      PFQ054: walking_equipment_raw
+
+feature_groups:
+  age_only: [age]
+  demographic: [age, sex, race_ethnicity, education, poverty_income_ratio]
+  anthropometric: [bmi, height_cm, weight_kg]
+  lifestyle:
+    [activity_met_minutes_week, sitting_minutes, alcohol_drinks_week,
+     current_smoker, activity_nonresponse, alcohol_nonresponse]
+  nutrition:
+    [energy_kcal, protein_g, vitamin_e_mg, vitamin_d_mcg, calcium_mg,
+     phosphorus_mg, magnesium_mg, calcium_per_1000kcal,
+     vitamin_d_per_1000kcal, magnesium_per_1000kcal,
+     protein_per_kg, calcium_phosphorus_ratio]
+  clinical:
+    [prior_fracture_history, parental_hip_fracture,
+     long_term_glucocorticoid, menopausal_status, hormone_therapy_ever]
+  medical_mobility:
+    [arthritis_history, liver_condition, thyroid_problem,
+     needs_walking_equipment]
+  extended_anthropometric:
+    [upper_arm_length_cm, arm_circumference_cm, waist_circumference_cm]
+  albumin_chemistry:
+    [serum_albumin_g_dl, alkaline_phosphatase_iu_l,
+     albumin_alkaline_phosphatase_ratio]
+  medication_risk:
+    [systemic_glucocorticoid_medication, anticonvulsant_medication,
+     aromatase_inhibitor_medication, proton_pump_inhibitor_medication,
+     long_term_bone_risk_medication]
+  grip: [combined_grip_strength_kg]
+  biomarkers:
+    [alkaline_phosphatase_iu_l, serum_calcium_mg_dl,
+     serum_total_folate_nmol_l, serum_25oh_vitamin_d_nmol_l]
+  published_low_bmd_panel:
+    [age, sex, poverty_income_ratio, bmi, diabetes_status,
+     prior_fracture_history, parental_hip_fracture,
+     total_cholesterol_mg_dl, monocyte_percent,
+     segmented_neutrophils_percent, mean_cell_volume_fl,
+     red_cell_distribution_width_percent, glycohemoglobin_percent,
+     alkaline_phosphatase_iu_l, creatine_phosphokinase_iu_l,
+     globulin_g_dl, osmolality_mmol_kg, total_protein_g_dl,
+     uric_acid_mg_dl]
+
+categorical_features:
+  [sex, race_ethnicity, education, current_smoker, age_sex_interaction,
+   prior_fracture_history, parental_hip_fracture, long_term_glucocorticoid,
+   menopausal_status, hormone_therapy_ever, diabetes_status,
+   arthritis_history, rheumatoid_arthritis, liver_condition, thyroid_problem,
+   needs_walking_equipment, systemic_glucocorticoid_medication,
+   anticonvulsant_medication, aromatase_inhibitor_medication,
+   proton_pump_inhibitor_medication, long_term_bone_risk_medication]
+
+missing_codes_by_column:
+  education: [7, 9]
+  arthritis_raw: [7, 9]
+  arthritis_type_raw: [7, 9]
+  liver_condition_raw: [7, 9]
+  thyroid_problem_raw: [7, 9]
+  walking_equipment_raw: [7, 9]
+  vigorous_work_days: [77, 99]
+  vigorous_work_minutes: [7777, 9999]
+  moderate_work_days: [77, 99]
+  moderate_work_minutes: [7777, 9999]
+  walk_bike_days: [77, 99]
+  walk_bike_minutes: [7777, 9999]
+  vigorous_recreation_days: [77, 99]
+  vigorous_recreation_minutes: [7777, 9999]
+  moderate_recreation_days: [77, 99]
+  moderate_recreation_minutes: [7777, 9999]
+  sitting_minutes: [7777, 9999]
+  alcohol_12plus_year: [7, 9]
+  alcohol_frequency_quantity: [777, 999]
+  alcohol_frequency_unit: [7, 9]
+  drinks_per_drinking_day: [777, 999]
+  smoked_100_cigarettes: [7, 9]
+  current_smoking_frequency: [7, 9]
+  household_smoker: [7, 9]
+  household_smoker_count: [777, 999]
+  household_smoke_days: [77, 99]
+  fractured_hip_history: [7, 9]
+  fractured_wrist_history: [7, 9]
+  fractured_spine_history: [7, 9]
+  other_adult_fracture_history: [7, 9]
+  long_term_glucocorticoid_raw: [7, 9]
+  maternal_hip_fracture_raw: [7, 9]
+  paternal_hip_fracture_raw: [7, 9]
+  period_past_year_raw: [7, 9]
+  amenorrhea_reason_raw: [77, 99]
+  ovaries_removed_raw: [7, 9]
+  hormone_therapy_raw: [7, 9]
+  diabetes_status_raw: [7, 9]

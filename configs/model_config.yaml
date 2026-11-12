@@ -1,0 +1,27 @@
+seed: 42
+classification_min_age: 50
+classification_target: osteoporosis
+classification_selection_metric: roc_auc
+production_classification_cycles: ["2007-2008", "2009-2010", "2013-2014", "2017-2018"]
+candidate_expansion_cycles: ["2005-2006"]
+regression_min_age: 40
+test_size: 0.2
+cv_folds: 5
+cv_n_jobs: 1
+screening_sensitivity_target: 0.90
+screening_recall_targets: [0.90, 0.80, 0.70]
+screening_precision_targets: [0.20, 0.25, 0.30]
+nutrition_cluster_candidates: [2, 3, 4, 5, 6]
+bootstrap_iterations: 500
+subgroup_threshold_min_n: 50
+targeted_biomarker_cycle: "2013-2014"
+temporal_evaluation_cycle: "2017-2018"
+published_panel_cycles: ["2013-2014", "2017-2018"]
+decision_curve_thresholds: [0.01, 0.02, 0.03, 0.04, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]
+shap_background_n: 100
+shap_sample_n: 250
+t_score_reference:
+  site: femoral_neck
+  mean_bmd: 0.858
+  sd_bmd: 0.120
+  source: "NHANES III young-adult White female femoral-neck reference; values are configurable"
