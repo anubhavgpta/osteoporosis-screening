@@ -517,6 +517,11 @@ def run_all(root: Path) -> dict:
         target=classification_target,
     )
 
+    joblib.dump(
+        temporal_result.model,
+        paths.artifacts / "classification_temporal_model.joblib",
+    )
+
     regression_result = run_regression(
         regression,
         regression_features,

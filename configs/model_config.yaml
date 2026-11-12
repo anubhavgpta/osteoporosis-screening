@@ -1,7 +1,7 @@
 seed: 42
 classification_min_age: 50
 classification_target: osteoporosis
-classification_selection_metric: roc_auc
+classification_selection_metric: pr_auc
 production_classification_cycles: ["2007-2008", "2009-2010", "2013-2014", "2017-2018"]
 candidate_expansion_cycles: ["2005-2006"]
 regression_min_age: 40
@@ -19,6 +19,7 @@ temporal_evaluation_cycle: "2017-2018"
 published_panel_cycles: ["2013-2014", "2017-2018"]
 decision_curve_thresholds: [0.01, 0.02, 0.03, 0.04, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]
 shap_background_n: 100
+shap_enabled: false
 shap_sample_n: 250
 t_score_reference:
   site: femoral_neck

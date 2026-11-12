@@ -26,6 +26,10 @@ def write_shap_attributions(
 ) -> dict:
     """Write optional SHAP summaries for the final calibrated classifier."""
     manifest_path = paths.tables / f"{prefix}_shap_manifest.json"
+    if not config.get("shap_enabled", True):
+        payload = {"status": "skipped", "reason": "disabled by shap_enabled configuration"}
+        _write_json(payload, manifest_path)
+        return payload
     if importlib.util.find_spec("shap") is None:
         payload = {
             "status": "skipped",
@@ -44,14 +48,28 @@ def write_shap_attributions(
     background = usable.sample(background_size, random_state=seed)
     explained = usable.sample(sample_size, random_state=seed + 1)
 
+    # SHAP's numeric masker cannot compare raw text categories. Encode them only
+    # for masking, then restore their original labels before model prediction.
+    encoded = usable[features].copy()
+    category_maps = {}
+    for column in features:
+        if not pd.api.types.is_numeric_dtype(encoded[column]):
+            categories = list(encoded[column].dropna().unique())
+            category_maps[column] = dict(enumerate(categories))
+            codes = {value: code for code, value in enumerate(categories)}
+            encoded[column] = encoded[column].map(codes).fillna(-1).astype(float)
+    encoded = encoded.astype(float)
+
     def predict_probability(values):
         data = pd.DataFrame(values, columns=features)
+        for column, categories in category_maps.items():
+            data[column] = data[column].map(categories)
         return model.predict_proba(data)[:, 1]
 
-    masker = shap.maskers.Independent(background[features])
+    masker = shap.maskers.Independent(encoded.loc[background.index])
     explainer = shap.PermutationExplainer(predict_probability, masker, seed=seed)
     shap_values = explainer(
-        explained[features],
+        encoded.loc[explained.index],
         max_evals=int(config.get("shap_max_evals", 2 * len(features) + 1)),
     )
     values = np.asarray(shap_values.values, dtype=float)
@@ -71,7 +89,7 @@ def write_shap_attributions(
     )
     importance.to_csv(paths.tables / f"{prefix}_shap_feature_importance.csv", index=False)
 
-    probabilities = predict_probability(explained[features])
+    probabilities = predict_probability(encoded.loc[explained.index])
     long_rows = []
     for row_number, (_, row) in enumerate(explained.iterrows()):
         participant_id = row.get("participant_id", row_number)
