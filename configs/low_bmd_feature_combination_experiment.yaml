@@ -1,0 +1,63 @@
+output_prefix: low_bmd_feature_combination
+report_filename: LOW_BMD_FEATURE_COMBINATION_RESULTS.md
+target: low_bmd
+low_bmd_t_score_cutoff: -1.0
+minimum_cycle_observed_fraction: 0.25
+recall_target: 0.90
+recall_lcb_confidence: 0.95
+
+# This experiment is intentionally additive. It does not replace the deployed
+# osteoporosis classifier or its operating thresholds.
+feature_panels:
+  anthropometric_first:
+    base: demographic_anthropometric
+    feature_groups: [extended_anthropometric]
+  E12_baseline:
+    base: e12
+    features: []
+  E12_plus_extended_anthropometric:
+    base: e12
+    feature_groups: [extended_anthropometric]
+  routine_lab_literature_panel:
+    base: demographic_anthropometric
+    features:
+      [total_cholesterol_mg_dl, glycohemoglobin_percent,
+       alkaline_phosphatase_iu_l, creatine_phosphokinase_iu_l,
+       serum_albumin_g_dl, serum_calcium_mg_dl, globulin_g_dl,
+       osmolality_mmol_kg, total_protein_g_dl, uric_acid_mg_dl,
+       albumin_alkaline_phosphatase_ratio]
+  published_low_bmd_19_variable_panel:
+    base: none
+    feature_groups: [published_low_bmd_panel]
+  E12_plus_published_low_bmd_19_variable_panel:
+    base: e12
+    feature_groups: [published_low_bmd_panel]
+  E12_plus_routine_labs:
+    base: e12
+    features:
+      [total_cholesterol_mg_dl, glycohemoglobin_percent,
+       alkaline_phosphatase_iu_l, creatine_phosphokinase_iu_l,
+       serum_albumin_g_dl, serum_calcium_mg_dl, globulin_g_dl,
+       osmolality_mmol_kg, total_protein_g_dl, uric_acid_mg_dl,
+       albumin_alkaline_phosphatase_ratio]
+
+logistic_c: [0.3, 1.0, 3.0]
+lasso_selection_c: [0.03, 0.1]
+random_forest_min_samples_leaf: [5, 10, 20]
+random_forest_max_features: ["sqrt"]
+xgboost_max_depth: [2, 3]
+xgboost_learning_rate: [0.03, 0.06]
+xgboost_min_child_weight: [3, 5]
+lightgbm_num_leaves: [7, 15]
+lightgbm_learning_rate: [0.03, 0.06]
+catboost_depth: [3, 4]
+catboost_learning_rate: [0.03, 0.06]
+spline_logistic_c: [0.3, 1.0]
+mlp_hidden_layer_sizes: [[32], [64, 32]]
+mlp_alpha: [0.001, 0.01]
+mlp_learning_rate_init: 0.001
+mlp_max_iter: 250
+tree_n_estimators: [150]
+include_stacking: true
+stacking_cv_folds: 3
+include_resampling_candidates: false

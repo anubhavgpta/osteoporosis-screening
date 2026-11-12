@@ -1,0 +1,28 @@
+output_prefix: curve_bending
+recall_target: 0.90
+recall_lcb_confidence: 0.95
+clinical_utility_threshold_probability: 0.05
+relaxed_recall_targets: [0.85, 0.80, 0.75, 0.70]
+relaxed_objectives: [balanced_accuracy, mcc, f1, net_benefit]
+relaxed_model_scopes: [pooled]
+biomarker_min_cycle_observed_fraction: 0.25
+stage2_panel: core_plus_vitamin_d
+
+# These panels are evaluated only in cycles where every member meets the
+# minimum observed-fraction rule above. Grip is intentionally absent.
+biomarker_panels:
+  core_chemistry:
+    [alkaline_phosphatase_iu_l, serum_calcium_mg_dl]
+  core_plus_vitamin_d:
+    [alkaline_phosphatase_iu_l, serum_calcium_mg_dl,
+     serum_25oh_vitamin_d_nmol_l]
+  full_four_biomarkers:
+    [alkaline_phosphatase_iu_l, serum_calcium_mg_dl,
+     serum_total_folate_nmol_l, serum_25oh_vitamin_d_nmol_l]
+
+# Hyperparameters are selected independently inside each outer training fold;
+# the sex-stratified strategy performs this selection separately by sex.
+logistic_c: [0.25, 1.0, 4.0]
+random_forest_min_samples_leaf: [5, 15]
+xgboost_max_depth: [2, 3]
+tree_n_estimators: 200

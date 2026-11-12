@@ -1,0 +1,55 @@
+output_prefix: osteoporosis_imbalance
+report_filename: OSTEOPOROSIS_IMBALANCE_RESULTS.md
+target: osteoporosis
+recall_targets: [0.90, 0.80, 0.70]
+precision_targets: [0.20, 0.25, 0.30]
+minimum_cycle_observed_fraction: 0.25
+
+# Keep the same femoral-neck osteoporosis target and production-cycle cohort.
+# These panels test the requested FRAX-style feature additions without using BMD
+# or any DXA-derived predictor as a feature.
+feature_panels:
+  E12_baseline:
+    base: e12
+    features: []
+  E12_plus_lifestyle_nutrition:
+    base: e12
+    feature_groups: [lifestyle, nutrition]
+    features: [dietary_recall_status]
+  E12_plus_extended_anthropometric:
+    base: e12
+    feature_groups: [extended_anthropometric]
+  E12_plus_lifestyle_nutrition_anthropometric:
+    base: e12
+    feature_groups: [lifestyle, nutrition, extended_anthropometric]
+    features: [dietary_recall_status]
+  E13e_prior_best_chemistry_anthropometric:
+    base: e12
+    feature_groups: [albumin_chemistry, extended_anthropometric]
+
+# Positive-class multipliers are learned inside each training partition from
+# survey-weighted class prevalence. They multiply the survey sample weights for
+# osteoporosis-positive rows only.
+positive_weight_modes: [none, sqrt_balanced, balanced]
+
+models:
+  logistic: true
+  random_forest: true
+  xgboost: true
+  lightgbm: true
+  catboost: true
+
+tree_n_estimators: 150
+random_forest_min_samples_leaf: 5
+xgboost_max_depth: 3
+xgboost_learning_rate: 0.03
+xgboost_min_child_weight: 3
+lightgbm_num_leaves: 15
+lightgbm_learning_rate: 0.03
+catboost_depth: 4
+catboost_learning_rate: 0.03
+
+# Optional. The current environment may not include imbalanced-learn; if absent,
+# the experiment writes a manifest note and continues with class-weight arms.
+include_resampling_candidates: true
+resampling_methods: [smote, adasyn, random_over]

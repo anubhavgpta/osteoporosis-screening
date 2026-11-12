@@ -1,0 +1,69 @@
+output_prefix: feature_combination
+minimum_cycle_observed_fraction: 0.25
+recall_target: 0.90
+recall_lcb_confidence: 0.95
+
+# Every eligible panel is added to the frozen E12 feature contract. Panels
+# containing medications are reported but skipped unless every production
+# cycle has usable prescription data.
+feature_panels:
+  E12_baseline: []
+  E13a_albumin_only: [serum_albumin_g_dl]
+  E13b_alp_only: [alkaline_phosphatase_iu_l]
+  E13c_albumin_alp_ratio:
+    [serum_albumin_g_dl, alkaline_phosphatase_iu_l,
+     albumin_alkaline_phosphatase_ratio]
+  E13d_extended_anthropometric:
+    [upper_arm_length_cm, arm_circumference_cm, waist_circumference_cm]
+  E13e_chemistry_plus_anthropometric:
+    [serum_albumin_g_dl, alkaline_phosphatase_iu_l,
+     albumin_alkaline_phosphatase_ratio, upper_arm_length_cm,
+     arm_circumference_cm, waist_circumference_cm]
+  E13f_medication_risk:
+    [systemic_glucocorticoid_medication, anticonvulsant_medication,
+     aromatase_inhibitor_medication, proton_pump_inhibitor_medication,
+     long_term_bone_risk_medication]
+  E13g_chemistry_plus_medication:
+    [serum_albumin_g_dl, alkaline_phosphatase_iu_l,
+     albumin_alkaline_phosphatase_ratio,
+     systemic_glucocorticoid_medication, anticonvulsant_medication,
+     aromatase_inhibitor_medication, proton_pump_inhibitor_medication,
+     long_term_bone_risk_medication]
+  E13h_anthropometric_plus_medication:
+    [upper_arm_length_cm, arm_circumference_cm, waist_circumference_cm,
+     systemic_glucocorticoid_medication, anticonvulsant_medication,
+     aromatase_inhibitor_medication, proton_pump_inhibitor_medication,
+     long_term_bone_risk_medication]
+  E13i_all_requested:
+    [serum_albumin_g_dl, alkaline_phosphatase_iu_l,
+     albumin_alkaline_phosphatase_ratio, upper_arm_length_cm,
+     arm_circumference_cm, waist_circumference_cm,
+     systemic_glucocorticoid_medication, anticonvulsant_medication,
+     aromatase_inhibitor_medication, proton_pump_inhibitor_medication,
+     long_term_bone_risk_medication]
+
+logistic_c: [0.3, 1.0, 3.0]
+lasso_selection_c: [0.03, 0.1]
+random_forest_min_samples_leaf: [5, 10, 20]
+random_forest_max_features: ["sqrt"]
+xgboost_max_depth: [2, 3]
+xgboost_learning_rate: [0.03, 0.06]
+xgboost_min_child_weight: [3, 5]
+lightgbm_num_leaves: [7, 15]
+lightgbm_learning_rate: [0.03, 0.06]
+catboost_depth: [3, 4]
+catboost_learning_rate: [0.03, 0.06]
+spline_logistic_c: [0.3, 1.0]
+mlp_hidden_layer_sizes: [[32], [64, 32]]
+mlp_alpha: [0.001, 0.01]
+mlp_learning_rate_init: 0.001
+mlp_max_iter: 250
+tree_n_estimators: [150]
+include_stacking: true
+stacking_cv_folds: 3
+
+# Off by default because the current environment may not include imbalanced-learn.
+# When enabled and installed, SMOTE/ADASYN/random-oversampling candidates are
+# scored in the same nested leave-one-cycle-out experiment, never in production.
+include_resampling_candidates: false
+resampling_methods: [smote, adasyn, random_over]
