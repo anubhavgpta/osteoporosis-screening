@@ -1,0 +1,21 @@
+{
+  "status": "historical_reference_not_new_run",
+  "source": "reports/run_summary.json",
+  "values": {
+    "classification_n": 9367,
+    "classification_events": 562,
+    "classification_model": "random_forest",
+    "classification_feature_set": "E12_e8_plus_medical_mobility",
+    "classification_selection_metric": "pr_auc",
+    "classification_weighted_roc_auc": 0.8532601641478339,
+    "classification_weighted_pr_auc": 0.37207846400780903,
+    "screening_threshold": 0.027135471211340634,
+    "screening_sensitivity": 0.9140483599347887,
+    "screening_specificity": 0.5600242787288185,
+    "screening_ppv": 0.11656697089596615,
+    "screening_npv": 0.9903462556542407,
+    "temporal_model": "xgboost",
+    "temporal_weighted_roc_auc": 0.8335135442692845,
+    "temporal_weighted_pr_auc": 0.3695219969675923
+  }
+}

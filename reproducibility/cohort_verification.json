@@ -1,0 +1,12 @@
+{
+  "classification_cohort.csv.gz": {
+    "rows": 9367,
+    "columns": 161,
+    "matches_archived_values": true
+  },
+  "knhanes_2008_2011_harmonized.csv.gz": {
+    "rows": 21303,
+    "columns": 23,
+    "matches_archived_values": true
+  }
+}

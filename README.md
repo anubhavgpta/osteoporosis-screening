@@ -10,13 +10,14 @@ result summaries. Raw survey data, processed participant records, fitted models,
 and generated result tables are excluded from Git. Download NHANES using the CLI;
 obtain approved KNHANES exports separately for external validation.
 
-Exact reproduction of the archived results is not yet verified. The current
-configuration selects classifiers by `roc_auc`, whereas the report's archived
-random forest was selected by `pr_auc`. The original generating code/configuration
-and a locked dependency environment have not been recovered. The local archived
-model and metadata also differ from their external-validation manifest hashes,
-and the temporal model was not saved. Preserve historical outputs before rerunning.
-See `manuscript/README.md` for the provenance and evaluation limitations.
+Use the [reproducibility guide](reproducibility/README.md) for the pinned Python
+environment, reference input hashes, isolated runs, and verification evidence.
+The current configuration uses `pr_auc`, matching the report, and new runs save
+the temporal model. Exact reproduction of historical metrics remains unverified:
+the original generating revision/environment is unknown and the archived model
+and metadata differ from their old external-validation manifest hashes. Those
+historical discrepancies are preserved rather than silently corrected. See
+`manuscript/README.md` for the original provenance and evaluation limitations.
 
 This repository implements an end-to-end NHANES 2005–2018 research pipeline for
 screening current femoral-neck osteoporosis from routinely collectible demographic,
@@ -72,9 +73,9 @@ recommendation.
   log loss, Brier score/skill, calibration intercept/slope and plots, and decision
   curves. Threshold-dependent metrics are reported at both 0.5 and a training-only
   sensitivity-oriented threshold.
-- The final calibrated classifier writes SHAP attribution outputs when the optional
-  `shap` dependency is installed. If it is absent, a manifest records the skipped
-  attribution step without failing the run.
+- SHAP attribution is explicitly disabled in the report configuration. Set
+  `shap_enabled: true` to generate it with the optional `shap` dependency; a
+  manifest records disabled or unavailable attribution without failing the run.
 - Training-only operating points are also supplied for recall targets of 90%, 80%,
   and 70%, and precision targets of 20%, 25%, and 30%.
 - The NHANES-KNHANES integration experiment additionally compares a source-specific
@@ -96,17 +97,21 @@ classification design, but does not turn the model into a clinical diagnostic de
 PowerShell:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-.\.venv\Scripts\osteoporosis-pipeline.exe download
-.\.venv\Scripts\osteoporosis-pipeline.exe prepare
-.\.venv\Scripts\osteoporosis-pipeline.exe run
+py -3.13 -m venv .venv-repro
+.\.venv-repro\Scripts\python.exe -m pip install -r requirements-lock.txt
+.\.venv-repro\Scripts\python.exe -m pip install --no-deps --no-build-isolation -e .
+.\.venv-repro\Scripts\python.exe -m osteoporosis_screening.reproduce --output runs/core --download --expected-inputs reproducibility/reference_inputs.json
 ```
 
 The download step retrieves official 2005–06, 2007–08, 2009–10, 2013–14, and
 2017–18 XPT files listed in
 [`configs/variables.yaml`](configs/variables.yaml). Raw files are ignored by Git and
 never modified.
+
+The examples below use the original `.venv` path; substitute `.venv-repro` when
+using the locked setup above, and pass `--root runs/core` to work with its outputs.
+Use Python 3.13.3 on Windows x86_64 for the validated environment. KNHANES data
+must be obtained separately; see the guide before adding `--external`.
 
 Native harmonization and frozen external validation of the approved KNHANES
 2008-2011 SAS files in `data/raw_knhanes/`:
