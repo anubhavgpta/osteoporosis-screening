@@ -1,0 +1,83 @@
+schema_version: 1
+harmonized_outcome:
+  measurement: femoral_neck_bmd
+  definition: "T-score <= -2.5"
+  reference_mean_bmd: 0.858
+  reference_sd_bmd: 0.120
+  comparison_prevalence: 0.056
+required_coding:
+  sex: {male: 1, female: 2}
+  binary_categories: ["yes", "no"]
+  male_reproductive_category: "not_applicable_male"
+datasets:
+  knhanes_2008_2011:
+    role: geographic_external_validation
+    population: nationally representative South Korean survey participants
+    dxa: femoral neck and total femur
+    access: registration and data-use agreement required
+    status: raw_data_downloaded_and_harmonizer_implemented_locally
+    priority: 1
+    url: "https://knhanes.kdca.go.kr/knhanes/eng/index.do"
+    input_contract:
+      format: harmonized CSV or Parquet; one row per participant
+      identifier: participant_id (recommended, excluded from model features)
+      required_numeric:
+        - age
+        - poverty_income_ratio
+        - bmi
+        - height_cm
+        - weight_kg
+        - femoral_neck_bmd
+      required_categorical:
+        - sex
+        - race_ethnicity
+        - education
+        - prior_fracture_history
+        - parental_hip_fracture
+        - long_term_glucocorticoid
+        - menopausal_status
+        - hormone_therapy_ever
+        - arthritis_history
+        - liver_condition
+        - thyroid_problem
+        - needs_walking_equipment
+      optional:
+        - external_weight
+      derived_by_pipeline:
+        - age_sex_interaction
+      units:
+        femoral_neck_bmd: g/cm^2
+        height_cm: cm
+        weight_kg: kg
+        bmi: kg/m^2
+      notes:
+        - preserve missing values as null; do not replace them with zero
+        - external_weight must be finite and positive when supplied
+        - categorical labels must match the frozen NHANES feature definitions
+        - KNHANES income quartiles are mapped without outcomes to weighted NHANES PIR quartile midpoints
+        - unavailable predictors remain null and are processed by the frozen NHANES imputer
+    cautions:
+      - harmonize questionnaire categories and survey weights
+      - report both the fixed NHANES-reference endpoint and a Korean-reference sensitivity analysis
+  mros:
+    role: sex-specific_external_validation
+    population: 5994 older men in a multicenter US cohort
+    dxa: hip and femoral neck
+    access: account and data-use agreement required
+    status: adapter_ready_data_not_present
+    priority: 2
+    url: "https://mrosonline.ucsf.edu/"
+    cautions:
+      - male-only validation cannot establish performance in women
+      - map cohort clinical variables to the frozen production-feature definitions before evaluation
+  uk_biobank:
+    role: large_geographic_and_scanner_external_validation
+    population: approved UK Biobank imaging participants
+    dxa: GE Lunar whole-body, hip, and lumbar spine imaging
+    access: approved application and Research Analysis Platform required
+    status: adapter_ready_data_not_present
+    priority: 3
+    url: "https://www.ukbiobank.ac.uk/enable-your-research/apply-for-access"
+    cautions:
+      - substantial selection and scanner/domain shift from NHANES
+      - use numerical hip BMD outputs, not raw images, for this tabular model
