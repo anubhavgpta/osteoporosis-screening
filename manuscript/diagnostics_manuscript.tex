@@ -1,0 +1,173 @@
+% Standalone working manuscript for the Codex built-in LaTeX editor.
+% Diagnostics-oriented structure; not the official MDPI class or submission package.
+% Numerical results are transcribed from existing repository outputs, not rerun.
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,booktabs,tabularx,array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+\newcommand{\pending}[1]{\textcolor{red!65!black}{[AUTHOR ACTION: #1]}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\title{Routine-Information Screening for Femoral-Neck Osteoporosis: Survey-Weighted Modeling in NHANES and External Evaluation in KNHANES}
+\author{\pending{Author names, affiliations, ORCIDs, and corresponding author}}
+\date{Working manuscript --- 11 October 2026}
+\begin{document}
+\maketitle
+\noindent\textbf{Draft status.} Prepared for development toward submission to \emph{Diagnostics}. Results reflect saved research outputs. Model-selection provenance, author declarations, and reporting completeness require resolution before submission. This standalone file uses an article class for editor compatibility; it is not an official MDPI submission package.
+
+\begin{abstract}
+\noindent\textbf{Background/Objectives:} Routine demographic, anthropometric, and medical-history information may support referral prioritization for bone-density assessment, but high case detection can produce substantial false-positive screening. We evaluated discrimination, calibration, and operating-point trade-offs for femoral-neck osteoporosis across survey periods and populations.
+\textbf{Methods:} The analysis included 9367 NHANES participants aged at least 50 years from four survey cycles, with 562 osteoporosis cases. The outcome was a femoral-neck T-score $\leq-2.5$ under a fixed reference. Candidate classifiers used survey weights, imputation, probability calibration, and training-derived thresholds. Saved random-split and temporal evaluations were considered alongside nested leave-one-cycle-out experiments. A frozen classifier and its thresholds were evaluated in 9387 KNHANES participants. The main workflow's feature-panel selection preceded final splitting, limiting independence of its internal evaluations.
+\textbf{Results:} The saved random-forest model achieved an internal-test ROC-AUC of 0.853 and average precision of 0.372. At its sensitivity-oriented threshold, sensitivity was 91.4\%, specificity 56.0\%, and positive predictive value 11.7\%. A separately fitted temporal model achieved ROC-AUC 0.834 and sensitivity 83.2\%. External ROC-AUC was 0.884; sensitivity increased to 98.8\%, while specificity decreased to 27.8\%. A nested feature-panel comparison did not establish a clear improvement from adding chemistry and further anthropometric measurements.
+\textbf{Conclusions:} Routine information provided useful risk ranking, but high-sensitivity screening generated many false positives. Changes in calibration and specificity across populations constrain direct transport of screening thresholds. Confirmatory evaluation with fully isolated development decisions and prospective assessment of referral consequences remains necessary.
+\end{abstract}
+\noindent\textbf{Keywords:} osteoporosis; femoral neck; screening; machine learning; NHANES; KNHANES; calibration; external validation
+
+\section{Introduction}
+Bone mineral density (BMD) measured by dual-energy X-ray absorptiometry (DXA) provides a reference for densitometric classification. The International Society for Clinical Densitometry describes the use of T-scores and skeletal sites in relevant adult populations and recommends NHANES III reference data for femoral-neck and total-hip T-scores \cite{iscd}. A prediction model based on routinely collected information could support prioritization for further assessment. Such a model should be evaluated against a clearly specified anatomical and numerical outcome, rather than treated as a substitute for comprehensive diagnosis.
+
+Screening performance requires more than a favorable area under the receiver operating characteristic curve (ROC-AUC). When an outcome is uncommon, a threshold that detects most cases may generate substantially more false positives than true positives. Precision--recall assessment complements ROC analysis in this setting \cite{saito}. Calibration is also necessary to interpret predicted probabilities and determine whether a threshold can be transported to another population.
+
+NHANES combines examination, questionnaire, and laboratory information within a complex survey design \cite{nhanes}. It therefore supports investigation of routine-information screening while requiring attention to sampling weights, missingness, and changing measurement availability. KNHANES provides an independent population in which to examine transportability \cite{kweon}. Differences in outcome prevalence and variable definitions make this a demanding evaluation rather than a direct replication.
+
+The objectives were to characterize survey-weighted screening performance for current femoral-neck osteoporosis, quantify threshold-dependent trade-offs, assess performance across survey periods and in an external population, and investigate whether expanded feature panels or a broader low-BMD endpoint materially altered the findings. Reporting is organized with reference to TRIPOD+AI \cite{tripod}; a completed item-level checklist remains an author deliverable. \pending{Add a focused, verified comparison with prior osteoporosis prediction studies before submission; novelty is not established by this draft.}
+
+\section{Materials and Methods}
+\subsection{Study Design and Participants}
+This study used secondary cross-sectional survey data. The primary NHANES cohort comprised adults aged at least 50 years from 2007--2008, 2009--2010, 2013--2014, and 2017--2018 with an observed eligible femoral-neck measurement. Survey components were joined by participant identifier, with DXA records anchoring the merge. A reliable dietary recall was not required for the non-dietary classifier. The resulting production-cycle cohort contained 9367 participants and 562 cases.
+
+The saved overall preparation flow began with 30,245 DXA-anchored records, retained 24,969 with valid femoral-neck DXA, and identified 10,981 participants aged at least 50 years. This last group included 1614 participants from the candidate 2005--2006 expansion cycle, leaving 9367 in the production-cycle cohort. These counts describe the broader preparation pipeline and should not be presented as four-cycle-only attrition. The 2005--2006 expansion was evaluated separately and was not included in the saved main classifier.
+
+The external cohort consisted of 9387 KNHANES participants aged at least 50 years from 2008--2011, including 1766 cases. Source variables were harmonized to the frozen NHANES model's input contract. \pending{Confirm dataset access permissions, precise exclusion rules, sex and age distributions, cycle-specific counts, and the reproducible cohort-flow diagram.}
+
+\subsection{Outcome Definition}
+The research outcome was femoral-neck osteoporosis, calculated as
+\begin{equation}
+T=\frac{\mathrm{BMD}-0.858}{0.120},\qquad Y=\mathbb{I}(T\leq-2.5),
+\end{equation}
+with BMD in g/cm$^2$. The configured reference was applied to both sexes and retained in the external analysis to maintain outcome comparability. Osteopenia and normal BMD were negative for this classifier. This site-specific outcome does not represent osteoporosis at any skeletal site. The inclusion of all women aged at least 50 years also requires explicit discussion relative to menopause-specific clinical interpretation. \pending{Verify and cite the original source for the exact numerical reference constants; the general ISCD positions alone do not establish these constants.}
+
+A separate sensitivity experiment used inclusive low BMD, defined as $T<-1.0$. This was a different prediction target and did not replace the main outcome. The cross-sectional design precluded prediction of future disease onset or causal inference.
+
+\subsection{Predictor Panels and Preprocessing}
+The saved E12 panel contained 17 supplied variables plus one derived age--sex category (Table~\ref{tab:inputs}). Earlier panels assessed demographics, body measurements, lifestyle, dietary variables, dietary-pattern clusters, and clinical history. Cycle-specific experiments considered grip strength and biomarkers. These experimental variables were not all inputs to the saved model.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Inputs to the saved E12 classifier.}\label{tab:inputs}
+\begin{tabularx}{\textwidth}{lY}\toprule
+Domain & Variables \\\midrule
+Demographic & Age, sex, race/ethnicity, education, poverty-to-income ratio \\
+Anthropometric & BMI, height, weight \\
+History & Prior fracture, parental hip fracture, long-term glucocorticoid use, menopausal status, hormone therapy history \\
+Medical/mobility & Arthritis history, liver condition, thyroid problem, need for walking equipment \\
+Derived & Joint category of age group and sex \\\bottomrule
+\end{tabularx}
+\end{table}
+
+Cleaning distinguished sentinel non-response from structural skips. The numeric preprocessing pipeline used iterative multivariate imputation with median initialization, up to 15 iterations, missingness indicators, and standardization. Categorical processing used most-frequent imputation, missingness indicators, and one-hot encoding with handling for previously unseen categories. Learned preprocessing was included in model pipelines. Dietary clustering, when evaluated, was learned inside training folds. Imputation of unmeasured external variables was retained as a limitation rather than interpreted as measurement equivalence.
+
+\subsection{Survey Weighting and Model Development}
+The implementation used examination weights for non-dietary classification and dietary weights for dietary analyses. The four-cycle NHANES examination weights were scaled for pooling, and cycle-specific survey design identifiers were retained. Weighting choices should be interpreted in the context of NHANES analytic guidance \cite{nhanes}. KNHANES evaluation used DXA examination weights and year factors recorded in the harmonization report. \pending{Confirm the original KNHANES weighting-guide citation and audit all weight fallbacks before finalizing the methods.}
+
+The main development routine used a stratified 80:20 participant split and five-fold stratified cross-validation within the training partition, with random seed 42. Candidate algorithms were regularized logistic regression, random forest, and XGBoost. The current random-forest implementation specifies 350 trees and a minimum leaf size of five. Saved metadata identify weighted average precision as the selection metric and random forest as the selected algorithm. However, the current configuration specifies ROC-AUC. Consequently, these outputs are reported as archived results pending reconciliation of the generating configuration and code version.
+
+Sigmoid probability calibration used cross-validation within development data. Calibrated out-of-fold training predictions determined operating thresholds. The sensitivity-oriented policy selected the threshold maximizing specificity subject to reaching the training sensitivity target of 90\%. Additional policies targeted alternative recall or precision levels. Thresholds were applied unchanged during the corresponding evaluation.
+
+\subsection{Evaluation Designs and Selection Independence}
+The archived random-split evaluation contained 1874 test participants. The temporal experiment fitted a separate model on 7081 participants from earlier production cycles and evaluated 2286 participants from 2017--2018. This experiment selected XGBoost; it was not an evaluation of the identical random-forest fit used for external validation.
+
+Inspection of the current main workflow shows that feature-panel ablations and promotion occur on the full classification cohort before the final random or temporal split is created. Although algorithm fitting and threshold selection in the final routine use training partitions, the broader feature-panel decision can incorporate information from later evaluation participants. We therefore treat the archived internal and temporal results as development-stage evidence with potential selection optimism. Their exact historical provenance must be verified before stronger claims are made.
+
+Separate additive experiments used outer leave-one-production-cycle-out evaluation with feature/model choices, hyperparameters, calibration, and threshold selection contained within each outer training partition. Their mean outer metrics describe the tested selection procedures; retrospectively choosing the highest-scoring fixed candidate across outer results would introduce another selection step.
+
+The external evaluation applied the frozen NHANES classifier without refitting or recalibration and retained its stored thresholds. Nevertheless, repeated examination of external results can influence subsequent research decisions; the chronology of model development and external analyses must be documented.
+
+\subsection{Statistical Measures}
+Evaluation included weighted ROC-AUC, average precision (reported in repository tables as PR-AUC), sensitivity, specificity, positive predictive value (PPV), negative predictive value (NPV), calibration, and Brier score. Average precision is the implemented summary and should not be described as a trapezoidal integral. Internal confidence intervals used 500 bootstrap iterations resampling primary sampling units within survey strata. These intervals describe uncertainty for the evaluated predictions and do not account for all preceding model-development decisions. A publication-specific survey variance review remains necessary.
+
+\section{Results}
+\subsection{Internal and Temporal Performance}
+The NHANES cohort's raw case proportion was 6.0\%. The archived random-forest classifier achieved ROC-AUC 0.853 and average precision 0.372. At threshold 0.027135, sensitivity was 91.4\%, specificity 56.0\%, PPV 11.7\%, and NPV 99.0\% (Table~\ref{tab:performance}). The Brier score was 0.0467, with calibration intercept 0.484 and slope 1.146.
+
+The separately developed temporal XGBoost model achieved ROC-AUC 0.834 and average precision 0.370. Its threshold was 0.029249, with sensitivity 83.2\%, specificity 60.5\%, and PPV 13.3\%. Calibration intercept and slope were 0.958 and 1.206, respectively. These results show that a nominal development sensitivity target did not guarantee the same sensitivity in the later cycle.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Archived evaluation results. Percentages are weighted. Internal and temporal analyses retain the feature-selection caveat described in Methods. Parentheses show 95\% bootstrap intervals. Threshold-independent intervals use the saved default-evaluation rows consistently. External intervals were not available in the source table used here.}\label{tab:performance}
+\begin{tabularx}{\textwidth}{lYYY}\toprule
+Measure & Internal random split & Temporal 2017--2018 & External KNHANES \\\midrule
+Participants & 1874 & 2286 & 9387 \\
+Algorithm & Random forest & XGBoost & Frozen random forest \\
+ROC-AUC & 0.853 (0.821--0.890) & 0.834 (0.791--0.881) & 0.884 \\
+Average precision & 0.372 (0.302--0.448) & 0.370 (0.290--0.477) & 0.647 \\
+Sensitivity, \% & 91.4 (86.9--96.1) & 83.2 (76.3--91.6) & 98.8 \\
+Specificity, \% & 56.0 (52.9--59.5) & 60.5 (58.1--63.0) & 27.8 \\
+PPV, \% & 11.7 (9.4--13.9) & 13.3 (11.7--15.2) & 21.7 \\
+NPV, \% & 99.0 (98.4--99.6) & 98.0 (97.1--99.0) & 99.1 \\\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Operating-Point Trade-offs}
+Table~\ref{tab:thresholds} shows archived random-test results for training-derived policies. Increasing the threshold improved specificity and PPV while reducing sensitivity. At threshold 0.0824, PPV increased to 27.7\%, but sensitivity decreased to 55.7\%. These policies represent alternative workload and missed-case trade-offs rather than evidence of a universally optimal clinical threshold.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Training-derived operating points applied to the archived random test set.}\label{tab:thresholds}
+\begin{tabular}{lrrrr}\toprule
+Training objective & Threshold & Sensitivity (\%) & PPV (\%) & Specificity (\%) \\\midrule
+90\% recall & 0.0271 & 91.4 & 11.7 & 56.0 \\
+80\% recall & 0.0344 & 84.7 & 15.9 & 71.5 \\
+70\% recall & 0.0528 & 68.0 & 21.4 & 84.1 \\
+25\% precision & 0.0824 & 55.7 & 27.7 & 90.8 \\
+30\% precision & 0.1286 & 47.2 & 34.0 & 94.2 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{External Performance and Harmonization}
+KNHANES weighted prevalence was 16.81\%. The frozen model achieved ROC-AUC 0.884 and average precision 0.647. At the original NHANES threshold, sensitivity was 98.8\%, specificity 27.8\%, and PPV 21.7\%. Mean predicted probability was 11.53\%, below observed weighted prevalence, indicating underprediction on average. Calibration intercept was 0.974 and slope 1.177.
+
+The higher external PPV cannot be interpreted without the higher prevalence. The saved external report's illustrative standardization to 5.6\% prevalence yielded PPV 7.51\%. This 5.6\% is a chosen comparison prevalence, not the exact 5.97\% weighted prevalence of the NHANES internal test set.
+
+Long-term glucocorticoid use and need for walking equipment were unavailable throughout KNHANES. Prior fracture history was unavailable for 55.66\% of its pooled cohort. Parental bone history and liver-condition variables were not exact matches to the NHANES questions. These differences limit attribution of performance changes to geography alone.
+
+\subsection{Nested Experiments and Target Sensitivity}
+In the nested feature-combination experiment, the leading chemistry-plus-anthropometry panel had mean outer average precision 0.3745 and ROC-AUC 0.8598. Its paired average-precision difference from the E12 comparator in that same experiment was +0.0088 (95\% interval, $-0.0296$ to +0.0472). The interval included zero, so this experiment did not establish a clear advantage for the expanded panel. The comparator's average precision was 0.3656; it should not be replaced by a baseline from another experiment when calculating this difference.
+
+In the separate target-definition experiment, the rigorous leave-one-cycle-out osteoporosis analysis yielded ROC-AUC 0.8571, average precision 0.3547, sensitivity 91.4\%, and PPV 10.8\%. The low-BMD analysis yielded ROC-AUC 0.7901, average precision 0.7601, sensitivity 90.5\%, and PPV 56.6\%. Thus, a broader target increased some performance summaries while decreasing ROC-AUC. These results do not establish algorithmic superiority for the broader target.
+
+\section{Discussion}
+The study's principal observation is the separation between useful risk ranking and the consequences of a high-sensitivity screening policy. The archived classifier ranked osteoporosis cases above non-cases substantially better than chance, but approximately one in nine positive screens corresponded to the defined outcome at the high-recall internal operating point. A high NPV should also be considered alongside low outcome prevalence; it alone does not establish the safety of withholding assessment.
+
+The external analysis reinforces the importance of evaluating ranking, calibration, and operating characteristics separately. Discrimination remained favorable in KNHANES, yet average risk was underestimated and specificity was substantially lower under the unchanged NHANES threshold. Differences in prevalence, measurement definitions, missing predictors, and population composition offer plausible explanations, but the present analyses do not isolate their individual contributions. Prospective local threshold evaluation would be required before interpreting the score as a referral policy.
+
+Expanded feature panels produced limited evidence of improvement. This finding is relevant to collection burden: adding laboratory tests may reduce the practical advantage of routine-information screening. However, the confidence interval for the leading expanded panel was wide and does not prove equivalence or absence of useful biomarker signal. Similarly, the apparently higher precision of low-BMD prediction reflects a changed outcome and prevalence, so comparisons with other studies must align endpoint, age range, sampling design, and evaluation procedure.
+
+Several limitations constrain interpretation. First, this is a cross-sectional, femoral-neck-specific research outcome, not prospective fracture prediction or comprehensive clinical diagnosis. Second, main-workflow feature-panel selection preceded internal splitting, creating potential optimism; a fully isolated rerun or a primary emphasis on audited nested evaluation is necessary for confirmatory claims. Third, the current selection configuration differs from saved metadata, and the generating code/configuration must be recovered. Fourth, repeated assessment of the temporal cycle during expansion and policy experiments means it should not be characterized as a permanently untouched confirmation cohort. Fifth, bootstrap intervals for fixed predictions do not capture the entire development process, and survey variance assumptions require review. Sixth, external harmonization included missing and imperfectly matched predictors. Seventh, no prospective referral, cost-effectiveness, or patient-outcome study was performed.
+
+The analysis does not establish fairness across demographic groups. Although subgroup outputs exist, their denominators, uncertainty, and handling of small samples require a dedicated review before making subgroup-equivalence claims. Inclusion of race/ethnicity and socioeconomic variables further motivates assessment of portability and potential disparities. Finally, a focused comparison with validated clinical screening tools and contemporary prediction studies is required to position the contribution accurately.
+
+\section{Conclusions}
+Routine demographic, anthropometric, and history information supported discrimination of the study's femoral-neck osteoporosis outcome. High-sensitivity operating points generated substantial false-positive screening, and unchanged thresholds behaved differently in an external population. Expanded feature panels did not demonstrate a clear improvement in the examined nested comparison. These findings support further methodological and prospective evaluation rather than immediate clinical deployment.
+
+\section*{Author and Study Declarations}
+\noindent\textbf{Author Contributions:} \pending{Provide verified CRediT roles for each author.}\\
+\textbf{Funding:} \pending{Provide funder and grant details, or confirm absence of external funding.}\\
+\textbf{Institutional Review Board Statement:} \pending{Document original survey approvals and the institution's determination for this secondary analysis; do not infer exemption.}\\
+\textbf{Informed Consent Statement:} \pending{Confirm applicable source-survey consent documentation and secondary-use conditions.}\\
+\textbf{Data Availability Statement:} NHANES documentation is available through CDC. \pending{Add exact releases and access links, KNHANES conditions, and an approved code/archive DOI. Do not promise redistribution of restricted data.}\\
+\textbf{Acknowledgments:} \pending{Confirm contributors and acknowledgments.}\\
+\textbf{Conflicts of Interest:} \pending{Obtain declarations from all authors.}\\
+\textbf{Generative AI Use:} An OpenAI assistant was used to help prepare this working manuscript from repository materials and to identify candidate references. \pending{Authors must verify and revise the text, document the actual extent of use, and confirm the final disclosure against journal policy.}
+
+\begin{thebibliography}{99}
+\bibitem{iscd} International Society for Clinical Densitometry. Official Adult Positions, updated 2023. \url{https://iscd.org/text-based-official-adult-positions/}. Accessed 11 October 2026.
+\bibitem{nhanes} National Center for Health Statistics. NHANES Survey Methods and Analytic Guidelines; NHANES Tutorials: Weighting. \url{https://wwwn.cdc.gov/nchs/nhanes/tutorials/weighting.aspx}. Accessed 11 October 2026.
+\bibitem{kweon} Kweon, S.; et al. Data Resource Profile: The Korea National Health and Nutrition Examination Survey (KNHANES). \emph{International Journal of Epidemiology} \textbf{2014}, \emph{43}, 69--77. \url{https://doi.org/10.1093/ije/dyt228}.
+\bibitem{saito} Saito, T.; Rehmsmeier, M. The Precision-Recall Plot Is More Informative than the ROC Plot When Evaluating Binary Classifiers on Imbalanced Datasets. \emph{PLOS ONE} \textbf{2015}, \emph{10}, e0118432. \url{https://doi.org/10.1371/journal.pone.0118432}.
+\bibitem{tripod} Collins, G.S.; et al. TRIPOD+AI statement: updated guidance for reporting clinical prediction models that use regression or machine learning methods. \emph{BMJ} \textbf{2024}, \emph{385}, e078378. \url{https://doi.org/10.1136/bmj-2023-078378}.
+\end{thebibliography}
+\end{document}

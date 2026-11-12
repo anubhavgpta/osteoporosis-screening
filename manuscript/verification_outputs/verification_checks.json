@@ -1,0 +1,45 @@
+{
+  "artifact_hashes": {
+    "model": {
+      "actual": "c824cdfedd6c93be8dbc4c01cd40a7d0f20aeadff2e598a5eaaf9b62afb73693",
+      "matches_external_manifest": false
+    },
+    "model_metadata": {
+      "actual": "9be6b7e0fbf6fee470bc366159ee483e264ef3ec4371b96695da445f2bb8c644",
+      "matches_external_manifest": false
+    },
+    "input": {
+      "actual": "e4c47f9b9c9e4d7ce7b8543fd350095343d54554b4ce93af21eab6b8915fce5a",
+      "matches_external_manifest": true
+    }
+  },
+  "cohort": {
+    "nhanes_n": 9367,
+    "nhanes_cases": 562,
+    "knhanes_n": 9387,
+    "knhanes_cases": 1766,
+    "nhanes_duplicate_ids": 0,
+    "knhanes_duplicate_ids": 0
+  },
+  "source_hashes": {
+    "data\\raw_knhanes\\extracted\\hn08_all.sas7bdat": true,
+    "data\\raw_knhanes\\KNHANES_2008_DXA_SAS.sas7bdat": true,
+    "data\\raw_knhanes\\extracted\\hn09_all.sas7bdat": true,
+    "data\\raw_knhanes\\KNHANES_2009_DXA_SAS.sas7bdat": true,
+    "data\\raw_knhanes\\extracted\\hn10_all.sas7bdat": true,
+    "data\\raw_knhanes\\KNHANES_2010_DXA_SAS.sas7bdat": true,
+    "data\\raw_knhanes\\extracted\\hn11_all.sas7bdat": true,
+    "data\\raw_knhanes\\KNHANES_2011_DXA_SAS.sas7bdat": true
+  },
+  "external_id_example": "2009_A408399801",
+  "weight_2009": {
+    "n": 3440,
+    "stored_weight_matches_joint_weight": true,
+    "joint_and_exam_weights_differ_n": 3440
+  },
+  "software": {
+    "python": "3.13.3 (tags/v3.13.3:6280bb5, Apr  8 2025, 14:47:33) [MSC v.1943 64 bit (AMD64)]",
+    "numpy": "2.3.3",
+    "pandas": "2.2.3"
+  }
+}
