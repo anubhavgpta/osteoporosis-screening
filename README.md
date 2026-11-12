@@ -43,12 +43,27 @@ The outcome constants and analysis settings are defined in [model_config.yaml](c
 | NHANES cohort reconstruction | 9,367 rows and 161 columns reproduced from raw inputs, including 562 osteoporosis cases |
 | KNHANES harmonization | 21,303 rows and 23 columns reproduced; the external evaluation population comprises 9,387 eligible adults |
 | Repeated training and serialization | Synthetic-data tests verify repeated probabilities, thresholds, and saved-model predictions within 1e-12 |
-| Full-data model verification | Pending completion of the new full training and external-evaluation run |
-| Historical report metrics | Retained as reference values; exact regeneration has not been established |
+| Full-data model verification | Core training and frozen external validation completed; saved-model predictions verified |
+| Historical prediction agreement | All 1,874 internal, 2,286 temporal, and 9,387 external probabilities matched the archived values exactly |
+| Historical confidence intervals | Internal and temporal interval tables matched within 1e-12 |
 
 Cohort comparisons used relative and absolute tolerances of 1e-12, with storage-dtype differences ignored. Verification records are available in [cohort_verification.json](reproducibility/cohort_verification.json). Historical model results are preserved in [historical_reference.json](reproducibility/historical_reference.json).
 
-The original model-generating revision and environment are not fully recoverable. Archived model and metadata hashes also differ from their historical external-validation manifest. These discrepancies remain documented; successful software tests should not be interpreted as proof that every published metric has been reproduced.
+The full-data verification completed on November 13, 2026. Its [verification record](reproducibility/full_run_verification.json) contains source and configuration hashes, prediction comparisons, and evaluation metrics. Reloaded internal, temporal, and external predictions had a maximum absolute difference of zero from the new exports. The same exported probability values also matched the historical predictions exactly.
+
+The original model-generating revision and environment are not fully recoverable. Archived model and metadata hashes still differ from their historical external-validation manifest. Numerical agreement does not resolve those historical provenance discrepancies or the methodological limitations below. Supplementary nested experiments were not rerun as part of this verification.
+
+### Verified screening performance
+
+Values below are survey-weighted estimates at each model's training-selected sensitivity-oriented threshold.
+
+| Evaluation | Participants | ROC-AUC | Average precision | Sensitivity | Specificity |
+|---|---:|---:|---:|---:|---:|
+| Internal holdout | 1,874 | 0.8533 | 0.3721 | 91.40% | 56.00% |
+| Temporal holdout | 2,286 | 0.8335 | 0.3695 | 83.15% | 60.47% |
+| External KNHANES | 9,387 | 0.8839 | 0.6471 | 98.82% | 27.83% |
+
+The primary internal and external threshold was 0.02713547; the temporal model used 0.02924887. These results describe the implemented research procedure and do not establish clinical effectiveness.
 
 ## Installation
 

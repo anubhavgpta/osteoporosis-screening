@@ -117,11 +117,20 @@ Tests exercise two real weighted training runs, calibration, operating threshold
 and model save/reload agreement to tolerance 1e-12, alongside the existing unit
 suite. They do not establish identical numerical results across platforms.
 
+The full core workflow and frozen KNHANES validation completed on November 13,
+2026. `full_run_verification.json` records the audit. All 1,874 internal, 2,286
+temporal, and 9,387 external probabilities matched their historical values exactly.
+Reloading the new models also reproduced their exports with zero maximum absolute
+difference. Internal and temporal confidence-interval tables matched within 1e-12.
+Supplementary nested experiments were not rerun. Iterative-imputer convergence
+warnings occurred and remain in the run log.
+
 The primary selection setting is now `pr_auc`, matching the report. Historical
 model/metadata hashes still disagree with the old external manifest; that manifest
 has not been rewritten to hide the discrepancy. The original trained model's
-exact generating revision and environment remain unknown, so the original report
-metrics are historical reference values, not guaranteed outputs of this release.
+exact generating revision and environment remain unknown. The observed numerical
+agreement does not resolve those provenance gaps or guarantee cross-platform
+equivalence.
 
 SHAP is disabled explicitly with `shap_enabled: false`, since it is not required
 for the report's main results. Set it to `true` for an additional attribution run.

@@ -1,0 +1,112 @@
+{
+  "verified_on": "2026-11-13",
+  "run_status": "complete",
+  "source_sha256": {
+    "osteoporosis_screening/__init__.py": "8b2cab25811eaf79b0ad406c4d18aa37f5a45d633e432a3e96cfbc96c7e03ad0",
+    "osteoporosis_screening/attribution.py": "e87ec213a2b3f099535ee53cd221f67c3b2535889fb4fdafcdf7a2f21c6c4cc5",
+    "osteoporosis_screening/cli.py": "d51a6ae45513fcbcec431d03de1b095feee3a4548d11717207e1133fec900033",
+    "osteoporosis_screening/config.py": "039147d98507a7e9bd0048c4195cafdd8dfb2d948f1cd62b0e81620bd4d110fc",
+    "osteoporosis_screening/curve_bending.py": "5c8ae8516d24c972fb0a5ac67d6ae861724c52af9be151a7185f8a1bef171a24",
+    "osteoporosis_screening/evaluation.py": "b12ae88eb49122d8db2b47f54133d84f6d8dcedb171dba1e53d726bbe6653bd8",
+    "osteoporosis_screening/external.py": "d29fec5976fa4ace3beca434b8f8d2b86cae9add178821bebf5632caa8636b67",
+    "osteoporosis_screening/feature_combination.py": "0af14a944e8c144050f68d6c7c012c032d563774e927efa89dd5b4ae1fefdcef",
+    "osteoporosis_screening/features.py": "2d575edd8c4088da11e9898bf7a73a571a5f440859964db7573943b38f804b91",
+    "osteoporosis_screening/imbalance.py": "7db28d8b37df756280b9f238e8e97b468825b0443d7727283ca2453ac688a67d",
+    "osteoporosis_screening/ingest.py": "672a118347b53d81c120c835d90e8ff15d102d01ea30d157eb42aab430ab8a93",
+    "osteoporosis_screening/integration.py": "2644adc40d0e2c255c41900880be22d11c373af7dd0356b02e9e0e3da53c2c75",
+    "osteoporosis_screening/knhanes.py": "b38e9cbd6abc281f9d4076ae170de49cfcfa515a2d82036cd5f670563dae3952",
+    "osteoporosis_screening/modeling.py": "057b8eb45ad1449e204f56738b39d6c60f9f25d64a4e07651e64932e2d82dd4f",
+    "osteoporosis_screening/nutrition.py": "c2ab1976151de8a0da93fb35db018b64c561b70002f4f37fa5ba853318ca1de0",
+    "osteoporosis_screening/reporting.py": "b1a35ee4202109b1d380d2b9299e7f73a95789112ffbaa916a1108e24fa5e01e",
+    "osteoporosis_screening/reproduce.py": "c8ad3c9a90255d72b0bfe853e5b3e5ce6ce7dc65bb993c93ce13368ca00fe598",
+    "osteoporosis_screening/result_tracking.py": "df14ba818a0ae819369c1309308fda029dd8adb049e72638ecd09e79b35b3a06",
+    "osteoporosis_screening/site_target.py": "caf3e482ede60c5a1b2a79176fc5a331068b83f499ed7d73522bd0d5963f34e3",
+    "osteoporosis_screening/target_definition.py": "837a23fb945b2749f47114cb63e77f34122ed0a62f584af82079ef64c8e3c088",
+    "osteoporosis_screening/verify_results.py": "8045d8fa4c5dbc1598e0c876ffcc4b442550e677be111d62ba05058d865cb8f7",
+    "osteoporosis_screening/workflow.py": "d3b78d3c110bdbd4922bfa7415bb070a90ba17984d18043b80476edcc429cdeb"
+  },
+  "config_sha256": {
+    "curve_bending_experiment.yaml": "fd2079eeaee08c7a47ec7d2f2697ec657c6ea3b414a072fff3cedb715b06857c",
+    "external_datasets.yaml": "1cbffdf89ed36ea5b591e5981f93334aa442e4c67273860962917fddaeba3815",
+    "feature_combination_experiment.yaml": "2a462ebba34b470e6562e9d4e1da5c5376af87dfa7bdaf5a4fcd7b1ac021b73b",
+    "low_bmd_feature_combination_experiment.yaml": "5dbf7b2c418c4bd5da12db3213a888f3a03e4220ef8289e105f825eb8f24b745",
+    "low_bmd_pipeline_comparison_feature_combination_experiment.yaml": "2acc6d813caebc1996bf3104e9263ec03076c66792b50c578abab6c573eee872",
+    "model_config.yaml": "f8529d910f7b63d2e27edc5643738444705a19a4e0fc483097a24d905169ba71",
+    "osteoporosis_imbalance_experiment.yaml": "5ba1d64fcb42f6c8c7be7417d0a4ce9879ad6a7e6d680e583e072fcaaa4a52f0",
+    "target_definition_experiment.yaml": "d1003f2e76dd86c6aad4d60a34961cec2366494cec42f5ff118c0b3df876632e",
+    "variables.yaml": "bd07c0a36ff2105da947fc0f691817075d05fb6fd066b61f8ef993da3df1b8f6"
+  },
+  "environment_files_sha256": {
+    "pyproject.toml": "5859a512a8e1ca4e1b3859693f104427e1cd39adf7ba13cc7147357d8645dad6",
+    "requirements-lock.txt": "67bd763099573900eaf8e9e16d3164a9b9e882dfb4059a2b6551627ed2a4b64d",
+    ".python-version": "cab2a6ef71f91553b8974b642a96ec579e64be71518251f7f2501dffc228ec55"
+  },
+  "run_manifest_sha256": "f62e93b601558ed6e68e7f77b5d7b95b6d24c2df360f1bb53db6243be14f4195",
+  "saved_model_prediction_checks": {
+    "internal": {
+      "n": 1874,
+      "max_absolute_difference": 0.0
+    },
+    "temporal": {
+      "n": 2286,
+      "max_absolute_difference": 0.0
+    },
+    "external": {
+      "n": 9387,
+      "max_absolute_difference": 0.0
+    }
+  },
+  "historical_prediction_comparisons": {
+    "internal": {
+      "n": 1874,
+      "historical_max_probability_difference": 0.0,
+      "metrics": {
+        "roc_auc": 0.8532601641478339,
+        "pr_auc": 0.37207846400780903,
+        "sensitivity": 0.9140483599347887,
+        "specificity": 0.5600242787288185,
+        "ppv": 0.11656697089596615,
+        "npv": 0.9903462556542407,
+        "threshold": 0.027135471211340634
+      },
+      "historical_predictions_sha256": "6a33f623322f890327dbcf05962bc202d6f7d52526b0d82bf25c9881324526ba",
+      "new_predictions_sha256": "11c6b5fd9c7588104e602675faaacf58b1d600be186030ea3227e397dd3feda1"
+    },
+    "temporal": {
+      "n": 2286,
+      "historical_max_probability_difference": 0.0,
+      "metrics": {
+        "roc_auc": 0.8335135442692845,
+        "pr_auc": 0.36952199696759236,
+        "sensitivity": 0.8315444573776011,
+        "specificity": 0.6046718712748795,
+        "ppv": 0.13281072097680957,
+        "npv": 0.9801191076998838,
+        "threshold": 0.029248871071765024
+      },
+      "historical_predictions_sha256": "7f420c492c5b7fbddc86e3b8ac3fe08825fb24f03ae3ae3d8d9dae6ba917b11a",
+      "new_predictions_sha256": "cccc115eadce5440fee5fadbab92be15f6a48bc1339279c118614a160ceced1a"
+    },
+    "external": {
+      "n": 9387,
+      "historical_max_probability_difference": 0.0,
+      "metrics": {
+        "roc_auc": 0.8838847604205446,
+        "pr_auc": 0.6471307877277154,
+        "sensitivity": 0.9881555788188684,
+        "specificity": 0.2783284411850389,
+        "ppv": 0.21671765980335003,
+        "npv": 0.991474340873651,
+        "threshold": 0.027135471211340634
+      },
+      "historical_predictions_sha256": "ea4438dab3373f725a8d2b73e844ebb070d351d10b1d8e5c304fa882b9bb5e27",
+      "new_predictions_sha256": "eaf5df834a9472f016fca8abf948fca1465b9ec63e512b64db25d0aa9f09b8cb"
+    }
+  },
+  "historical_interval_comparisons": {
+    "classification": "matches archived table within 1e-12",
+    "classification_temporal_validation": "matches archived table within 1e-12"
+  },
+  "scope": "Full core workflow and frozen KNHANES validation; supplementary nested experiments were not rerun.",
+  "warnings": "Iterative imputer convergence warnings occurred. Historical artifact provenance and methodological limitations remain documented."
+}
